@@ -1,9 +1,9 @@
-'use strict';
+'use strict'
 
 let slackInfomation = null;
 
 //FIREBASE CONNECTION
-const config = {
+var config = {
     apiKey: "AIzaSyBw_XTxT6R_bfFIQCIsvAnbP3lUKaGPogo",
     authDomain: "tone-app-199717.firebaseapp.com",
     databaseURL: "https://tone-app-199717.firebaseio.com",
@@ -36,7 +36,7 @@ const config = {
                 password: password
             });
         });
-        // ???
+        //
         database.ref().orderByChild("dateAdded").limitToLast(1).on("child_added", function(snapshot){
             //store snapshot value
             let sv = snapshot.val();
@@ -95,61 +95,6 @@ const config = {
                 });
               });
 
-      //PERSPECTIVE API
-
-      let contentToAnalize = ""
-
-
-      // reset function
-  
-  
-          $('#textarea1').keyup( function(){
-              contentToAnalize = $('#textarea1').val();
-              // timeout so we don't jam the perspective API
-            
-              if( $(this).val().length === 0 ) {
-                  $('#percentage').text('Check Yourself')
-              }
-  
-              else {
-  
-  
-              setTimeout( 
-  
-  
-              // This Ajax call gives us the analized content from the perpective API
-                  function(){ $.ajax({
-                      contentType: "application/json",
-                      data: JSON.stringify({
-                          comment: {
-                              text: contentToAnalize
-                          },
-                          languages: ["en"],
-                          requestedAttributes: {
-                              TOXICITY: {}
-                          }
-                      }),
-                      method: 'POST',
-                      url: 'https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyC_mGbSsEJnpL8tD7BnO5jRXS_uTPMyFwE',
-                      success: function(response) {
-                          //console.log(response);
-                          //console.log(response.attributeScores.TOXICITY.summaryScore.value);
-                          let toxicity = response.attributeScores.TOXICITY.summaryScore.value
-                          let toxicityPercentage = (toxicity*100).toFixed(0)
-                          //console.log(toxicityPercentage)
-                         
-                         
-                         
-                          $('#percentage').text(toxicityPercentage + "% Toxic");
-                      } 
-                  });
-              
-              } , 3000);  
-  
-          };
-  
-          });
-        
     //SLACK API
         const username = 'test'
         const UID = 'UA0ATEGTG';
@@ -161,7 +106,6 @@ const config = {
             event.preventDefault();
             const message = $('#textarea1').val();
             postMessageToSlack(message);
-            gatherBotInfomation('BA3229MDG', message);
             })
 
         /**
@@ -188,43 +132,19 @@ const config = {
          *  object profile { display_name,display_name_normalized,image_24,image_32,image_48,image_72,image_192,image_512,
          *  real_name,real_name_normalized}
          */
-        function gatherUserInfomation(UID, message) {
+        function gatherUserInfomation(UID) {
         $.ajax({
             method:'GET',
             url: `https://slack.com/api/users.profile.get${SLACK_TOKEN}&user=${UID}&pretty=1`,
             success: function(data){
-                const user = data.profile.display_name || data.profile.real_name;
-                const icon = data.profile.image_48;
-                displayCustomMessageToApp(user , message, icon)
+                console.log(data)
+                // Will need to call the function to add to the Page in here  
+                return data.profile;
             },
             error:function(error){
                 console.log('error Unable to gather infomation with the given user ID: ' ,error)}
             });
         }
-
-        /**
-         * This will gather all the infomation on the user from slack
-         * 
-         * @param {*} UID user id from slack
-         * @return jsoon Object
-         * Main list of the key values that will be most used
-         *  object profile { display_name,display_name_normalized,image_24,image_32,image_48,image_72,image_192,image_512,
-         *  real_name,real_name_normalized}
-         */
-        function gatherBotInfomation(bot_Id, message) {
-            $.ajax({
-                method:'GET',
-                url: `https://slack.com/api/bots.info${SLACK_TOKEN}&bot=${bot_Id}&pretty=1`,
-                success: function(data){
-                    console.log(data)
-                    const user = data.bot.name;
-                    const icon = data.bot.icons.image_36;
-                    displayCustomMessageToApp(user , message, icon)
-                },
-                error:function(error){
-                    console.log('error Unable to gather infomation with the given user ID: ' ,error)}
-                });
-            }
 
         /**
          * This will take the given message and post it to slack
@@ -248,39 +168,20 @@ const config = {
          * @param {*} user 
          * @param {*} message 
          */
-        function displayMessageToApp(user ,message) {
-            console.log(message)
+        function displayMessageToApp(user ,message, i) {
+            console.log(message);
             const template = `<div class="user-message">
                 <div class="row message-head">
                     <div class="chip username"><img class="chip-img" src="https://static01.nyt.com/images/2018/02/11/realestate/11dogs-topbreeds-Chihuahua/11dogs-topbreeds-Chihuahua-master495.jpg" alt="Contact Person">
                     <span>${user}</span>
                     </div>
-                    <div class="right toxicity"> % toxic</div>
+                    <div class="right toxicity" id="toxicity${i}"></div>
                 </div>
                 <p class="row message-text">${message}</p>
                 <div  class="right timestamp">Time AMPM</div>
             </div>`;
             $('#all-messages').append(template);
-        }
 
-         /**
-         * Will append a single customized message to the view
-         * 
-         * @param {*} user 
-         * @param {*} message 
-         */
-        function displayCustomMessageToApp(user ,message, icon) {
-            const template = `<div class="user-message">
-            <div class="row message-head">
-                <div class="chip username"><img class="chip-img" src="${icon}" alt="Contact Person">
-                <span>${user}</span>
-                </div>
-                <div class="right toxicity"> % toxic</div>
-            </div>
-            <p class="row message-text">${message}</p>
-            <div  class="right timestamp">Time AMPM</div>
-        </div>`;
-            $('#all-messages').append(template);
         }
 
         /**
@@ -291,7 +192,7 @@ const config = {
             let text = slackInfomation[0].text;
             //aditonal User varification to see if we need more user data can be done here
             const user = slackInfomation[0].username || slackInfoation[0].user
-            text = checkIfTextMessageIsImgUrl(text)
+            text = checkIfTextMessageIsImgUrl(text);
             displayMessageToApp(user, text);
         }
 
@@ -300,17 +201,37 @@ const config = {
          * 
          * 
          */
+
         function displayAllMessages() {
-            for(let i = slackInfomation.length -1; i >= 0; i--){
+            for(let i = slackInfomation.length -1; i => 0; i--){
                 let text = slackInfomation[i].text;
-                text = checkIfTextMessageIsImgUrl(text);
                 //aditonal User varification to see if we need more user data can be done here
-                if(slackInfomation[i].user){
-                    gatherUserInfomation(slackInfomation[i].user, text);
-                }else{
-                    console.log('bot Id', slackInfomation[i].bot_id )
-                    gatherBotInfomation(slackInfomation[i].bot_id, text);
-                }
+                const user = slackInfomation[i].username || slackInfomation[i].user || slackInfomation[i].bot_id
+                text = checkIfTextMessageIsImgUrl(text);
+                $.ajax({
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        comment: {
+                            text: text
+                        },
+                        languages: ["en"],
+                        requestedAttributes: {
+                            TOXICITY: {}
+                        }
+                    }),
+                    method: 'POST',
+                    url: 'https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyC_mGbSsEJnpL8tD7BnO5jRXS_uTPMyFwE',
+                    success: function(response) {
+                        //console.log(response);
+                        //console.log(response.attributeScores.TOXICITY.summaryScore.value);
+                        let tox = response.attributeScores.TOXICITY.summaryScore.value
+                        let toxPercentage = (tox*100).toFixed(0)
+                        //console.log(toxPercentage,"% Toxic")
+                        $(`#toxicity${i}`).append(toxPercentage+"% Toxicity")
+                    } 
+                });
+                displayMessageToApp(user, text, i);
+
             }
         }
 
@@ -338,7 +259,40 @@ const config = {
 
 
         $('.displaymessage').on('click', displayAllMessages);
-    
-   
-        gatherUserInfomation('U9ZHFFZ43')
+
+
+    //PERSPECTIVE API
+        //TOXICITY OF EACH MESSAGE (see displayAllMessages function)
+        //TOXICITY OF MESSAGE BEING TYPED
+        let contentToAnalize = ""
+
+        $('#textarea1').keyup( function(){
+            contentToAnalize = $('#textarea1').val();
+            // timeout so we don't jam the perspective API
+            setTimeout( 
+            // This Ajax call gives us the analized content from the perpective API
+                function(){ $.ajax({
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        comment: {
+                            text: contentToAnalize
+                        },
+                        languages: ["en"],
+                        requestedAttributes: {
+                            TOXICITY: {}
+                        }
+                    }),
+                    method: 'POST',
+                    url: 'https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyC_mGbSsEJnpL8tD7BnO5jRXS_uTPMyFwE',
+                    success: function(response) {
+                        //console.log(response);
+                        //console.log(response.attributeScores.TOXICITY.summaryScore.value);
+                        let toxicity = response.attributeScores.TOXICITY.summaryScore.value
+                        let toxicityPercentage = (toxicity*100).toFixed(0)
+                        //console.log(toxicityPercentage)
+                        $('#percentage').text(toxicityPercentage + "% Toxic")
+                    } 
+                }); }
+            , 3000);
+        });
 

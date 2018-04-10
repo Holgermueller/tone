@@ -58,3 +58,5 @@ typings/
 .env
 
 ./asssets/javascript/config.js
+
+.env
