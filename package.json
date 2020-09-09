@@ -18,8 +18,8 @@
   "homepage": "https://github.com/Holgermueller/tone#readme",
   "dependencies": {
     "body-parser": "^1.x.x",
-    "dotenv": "^5.0.1",
-    "express": "^4.16.3",
-    "request": "2.56.x"
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "request": "2.88.x"
   }
 }
